@@ -1,0 +1,104 @@
+step 1 create 2 ec-2 instances of t2 micro for control plane and node1 expose port no 6363 in controlpane server in console
+install docker --on both
+then install kubctl kebeadm kubelet --on both 
+kubeadm init in control plane and then follow the step after kubreadm init as shown in your screen 
+then network connectivity at master like (weave-net ,calico, fannel)to connect with nodes )
+then paste kubeadm join command in node after that copy config file from control plane and paste it to the node ( on master cd /etc/kubernetes then ls 
+                                                                                                                 then cat admin.conf copy the conf file content from there and come in node as normal user then make directory mkdir 
+                                                                                                                 -m 777 .kube and get inside that directory with cd .kube/ then create a file name as config   vi config and paste the content 
+                                                                                                                 there and then do kubectl get nodes
+                                                                                                                 you will see one control-plane and node on both controlplane and slave and this is how cluster setup has done
+                                                                                                                 and now, perform our project.
+Step 2 : Creating a namespace Can use a default namespace as well
+
+kubectl create namespace wordpress
+Step 3 . creating a deployment file with three containers in it Wordpress , Mysql , Nginx
+
+vim deployment.yaml ( check from he files section )
+Now lets execute it
+
+kubectl apply -f deployment.yaml Now check all the pods are running or not
+
+kubectl get pods // for ( default namespace ) create a service.yaml as well to run he wordpress live or make the website accesable
+
+vim wordpress-service.yaml
+
+vim mysql-service.yaml
+
+vim nginx-service.yaml to execute use below command kubectl apply -f wordpress-service.yaml kubectl apply -f mysql-service.yaml kubectl apply -f nginx-service.yaml
+
+kubectl apply -f service.yaml
+step 4 . creating PersistentVolumeClaims and PersistentVolumes (pvc and pv )
+
+In simple terms, PersistentVolumeClaims (PVCs) and PersistentVolumes (PVs) are used in Kubernetes to manage storage resources. PVs are storage resources that are provisioned by the administrator, while PVCs are used by developers to request a specific amount of storage from the PVs. This separation allows for developers to request storage without needing to know the underlying details of the storage implementation. PVCs can also dynamically provision new PVs when needed, making it easy to scale storage resources as needed.
+
+vim mysql-pv.yaml
+vim mysql-pvc.yaml
+vim wordpress-pv.yaml
+vim wordpress-pvc.yaml
+All files are above ---- Execute all the below command
+
+kubectl apply -f mysql-pv.yaml
+kubectl apply -f mysql-pvc.yaml
+kubectl apply -f wordpress-pv.yaml
+kubectl apply -f wordpress-pvc.yaml
+Step 5 . Create docker file for wordpress , Mysql amd Nginx
+
+vim wordpress.dockerfile
+vim nginx.dockerfile
+vim mysql.dockerfile
+Execute all the below command to build the dockerfile
+
+docker build -t dockerfilewordpress -f wordpress.dockerfile .
+docker build -t dockerfilenginx -f nginx.dockerfile .
+docker build -t dockerfilemysql -f mysql.dockerfile .
+Step 6 . Use Opensresty with Lua in Nginx Compile an opensresty with Lua while building a docker container image for Nginx. Use the following configure options :
+
+./configure --prefix=/opt/openresty
+--with-pcre-jit
+--with-ipv6
+--without-http_redis2_module
+--with-http_iconv_module
+--with-http_postgres_module
+-j8
+
+Step 6 . Install WordpressPress using Helm chart Use Helm chart to install Wordpress:
+
+Run below commands Deploy Ingress Controller on GKE
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.43.0/deploy/static/provider/cloud/deploy.yaml Deploy wordpress using Helm chart
+helm install release1 bitnami/wordpress -f values.yaml For knowing your url and ip you run the below command kubectl get ingress Now its important to clear every thing to avoid disk usage
+Step 7 : To completely remove the WordPress release and all associated resources, follow the steps below:
+
+Uninstall the Helm Release
+
+helm uninstall release1
+
+Execute all the below command
+
+kubectl delete mysql-pv.yaml
+kubectl delete mysql-pvc.yaml
+kubectl delete wordpress-pv.yaml
+kubectl delete wordpress-pvc.yaml
+Step 8 : Verify the WordPress Deployment use the following command to get the external IP address of the Nginx service
+
+kubectl get svc nginx Open a web browser and enter the IP address in the address bar. You should see the WordPress installation page -----> vikasgupta.wordpress.local.com
+#2 Setup monitoring and alerting for wordpress app
+
+Objectives:
+
+Deploy Prometheus / Grafana stack on kubernetes (Can use public helm charts) port no 9090
+Setup monitoring and alerting for your application deployed earlier such as I should get below container metrics (Points for visualisation and alerting) a. Pod CPU utilisation
+Monitoring for nginx deployed in Objective-1 such as: Total Request Count Total 5xx request
+Create a document for all required metrics for wordpress, apache and nginx.
+To set up monitoring and alerting for your WordPress app, we can use the Grafana stack which includes Prometheus for collecting and storing metrics data, Grafana for visualizing metrics, and Alertmanager for managing alerts.
+
+Add the Grafana helm repository
+
+helm repo add grafana https://grafana.github.io/helm-charts Install the Grafana stack using Helm
+helm install grafana-stack grafana/grafana-stack
+Access the Grafana dashboard by getting the Grafana URL kubectl get svc -n grafana
+
+port no 3000 for Grafana
+user id and password --- admin and admin
+and need to reset it after installation .
