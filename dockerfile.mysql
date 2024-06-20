@@ -1,0 +1,7 @@
+FROM mysql:latest
+
+# Environment variables
+ENV MYSQL_ROOT_PASSWORD=root_password_here
+ENV MYSQL_DATABASE=wordpress
+ENV MYSQL_USER=wordpress_user
+ENV MYSQL_PASSWORD=wordpress_password

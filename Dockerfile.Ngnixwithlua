@@ -1,0 +1,30 @@
+# Use OpenResty base image with Lua support
+FROM openresty/openresty:latest
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y build-essential wget unzip libpcre3-dev zlib1g-dev libssl-dev
+
+# Download and extract OpenResty
+WORKDIR /tmp
+RUN wget -O openresty.tar.gz https://openresty.org/download/openresty-1.21.3.2.tar.gz && \
+    tar -xzvf openresty.tar.gz && \
+    cd openresty-1.21.3.2 && \
+    ./configure --prefix=/opt/openresty \
+                --with-pcre-jit \
+                --with-ipv6 \
+                --without-http_redis2_module \
+                --with-http_iconv_module \
+                --with-http_postgres_module \
+                -j8 && \
+    make && \
+    make install
+
+# Copy Nginx configuration file
+COPY nginx.conf /opt/openresty/nginx/conf/nginx.conf
+
+# Expose ports
+EXPOSE 80
+
+# Start Nginx
+CMD ["/opt/openresty/nginx/sbin/nginx", "-g", "daemon off;"]
