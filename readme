@@ -99,6 +99,8 @@ helm repo add grafana https://grafana.github.io/helm-charts Install the Grafana 
 helm install grafana-stack grafana/grafana-stack
 Access the Grafana dashboard by getting the Grafana URL kubectl get svc -n grafana
 
-port no 3000 for Grafana
+port no 9090 for promethus
+port no 9100 for node balancer
+then setup your dashboard using grafana
 user id and password --- admin and admin
 and need to reset it after installation .
